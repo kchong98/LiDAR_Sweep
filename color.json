@@ -4,7 +4,7 @@
  "Reflection": [224,224,224],
  "Vegetation": [0,153,0],
  "Ground": [102,51,0],
- "Road": [64,64,64],
+ "Road": [192,192,192],
  "Lane Line Marking": [255,255,204],
  "Stop Line Marking": [255,204,153],
  "Other Road Marking": [255,153,153],

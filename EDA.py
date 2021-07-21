@@ -72,6 +72,11 @@ color_maps = [(random.random(), random.random(), random.random()) for _ in range
 
 ax.scatter(xyz[:,0], xyz[:,1], xyz[:,2])
 
+# random subsampling of data
+sub_data = data.sample(frac=0.25)
+print(sub_data.info())
+
+
 # figsize = plt.rcParams.get('figure.figsize')
 # fig = plt.figure(figsize=(figsize[0] * 2, figsize[1]))
 # ax1 = fig.add_subplot(1, 2, 1, projection = '3d')
