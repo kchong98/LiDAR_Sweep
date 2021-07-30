@@ -18,7 +18,7 @@ def load_data(n_scenes = 3, n_train_sweeps = 5, n_test_sweeps = 3):
 
     returns: training dataset, testing dataset
     """
-    all_classes = np.arange(1,43, dtype=int).reshape(-1,1)
+    all_classes = np.arange(0,43, dtype=int).reshape(-1,1)
     semseg_files = ['001', '002', '003', '005', '011', '013', '015', '016', '017', '019', '021', '023', '024', '027', '028', '029', '030', '032', '033', '034', '035', '037', '038', '039', '040', '041', '042', '043', '044', '046']
     X_train, X_test, y_train, y_test = [], [], [], []
     oneHot = OneHotEncoder(sparse = False)
@@ -27,15 +27,15 @@ def load_data(n_scenes = 3, n_train_sweeps = 5, n_test_sweeps = 3):
     train_sweeps = random.sample(range(79), n_train_sweeps)
     test_sweeps = random.sample(range(79), n_test_sweeps)
 
-    for idx, scene in enumerate(semseg_files):
+    for scene in semseg_files[:n_scenes]:
         for a in train_sweeps:
             if a < 10:
                 sweep = '0' + str(a)
             else:
                 sweep = str(a)
             
-            pfile_seg = 'C:/Users/maste/4AI3/PandaSet/{}/annotations/semseg/{}.pkl'.format(scene, sweep)
-            pfile_lid = 'C:/Users/maste/4AI3/PandaSet/{}/lidar/{}.pkl'.format(scene, sweep)
+            pfile_seg = './dataset/{}/annotations/semseg/{}.pkl'.format(scene, sweep)
+            pfile_lid = './dataset/{}/lidar/{}.pkl'.format(scene, sweep)
             with open(pfile_seg, 'rb') as fin:
                 label = pickle.load(fin)
             with open(pfile_lid, 'rb') as fin:
@@ -43,10 +43,12 @@ def load_data(n_scenes = 3, n_train_sweeps = 5, n_test_sweeps = 3):
             
             temp = lidar
             temp['class'] = label
-            temp = temp.sample(80000)
+            temp = temp.sample(2000)
+
+            # print(temp['class'].unique())
 
             X_train.append(temp[['x','y','z']].to_numpy())
-            y_train.append(oneHot.transform(temp[['class']].to_numpy()))
+            y_train.append(oneHot.transform(temp['class'].to_numpy().reshape(-1,1)))
 
         for a in test_sweeps:
             if a < 10:
@@ -54,8 +56,8 @@ def load_data(n_scenes = 3, n_train_sweeps = 5, n_test_sweeps = 3):
             else:
                 sweep = str(a)
 
-            pfile_seg = 'C:/Users/maste/4AI3/PandaSet/{}/annotations/semseg/{}.pkl'.format(scene, sweep)
-            pfile_lid = 'C:/Users/maste/4AI3/PandaSet/{}/lidar/{}.pkl'.format(scene, sweep)
+            pfile_seg = './dataset/{}/annotations/semseg/{}.pkl'.format(scene, sweep)
+            pfile_lid = './dataset/{}/lidar/{}.pkl'.format(scene, sweep)
             with open(pfile_seg, 'rb') as fin:
                 label = pickle.load(fin)
             with open(pfile_lid, 'rb') as fin:
@@ -63,10 +65,10 @@ def load_data(n_scenes = 3, n_train_sweeps = 5, n_test_sweeps = 3):
 
             temp = lidar
             temp['class'] = label
-            temp = temp.sample(80000)
+            temp = temp.sample(2000)
 
             X_test.append(temp[['x','y','z']].to_numpy())
-            y_test.append(oneHot.transform(temp[['class']].to_numpy()))                
+            y_test.append(oneHot.transform(temp['class'].to_numpy().reshape(-1,1)))                
 
     train_data = tf.data.Dataset.from_tensor_slices((X_train, y_train))
     test_data = tf.data.Dataset.from_tensor_slices((X_test, y_test))
@@ -75,3 +77,7 @@ def load_data(n_scenes = 3, n_train_sweeps = 5, n_test_sweeps = 3):
 
 def create_model():
     return model
+
+if __name__ == "__main__":
+    train_data, test_data = load_data()
+    print('Done')
