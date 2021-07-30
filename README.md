@@ -19,3 +19,5 @@ The goal of this project is to
 - TensorFlow
 - Numpy
 - Pandas
+- Scikit-Learn
+- Pickle
