@@ -1,0 +1,5 @@
+**/dataset
+**/SemanticKITTI
+**/test_files
+/data.pk
+/predictions.pk

@@ -14,7 +14,7 @@ dataset = DataSet('C:/Users/maste/4AI3/PandaSet')
 
 # Determining sequences that have semantic segmentation labels
 sequences = dataset.sequences(with_semseg=True)
-# print(sequences)
+print(sequences)
 
 # Loading dataset into DataFrame
 for seq in sequences:
@@ -56,8 +56,8 @@ row = 0
 for a in semseg.to_numpy():
     rgb[row,:] = np.reshape(np.array(color_map[class_dict[str(int(a))]]), (1,3))/255
     row = row + 1
-# v = pptk.viewer(data[['x','y','z']].to_numpy(), rgb)
-# v.color_map('cool', scale=[0, 42])
+v = pptk.viewer(data[['x','y','z']].to_numpy(), rgb)
+v.color_map('cool', scale=[0, 42])
 # v.color_map([[0, 0, 0], [1, 1, 1]])
 
 # Preparing data
