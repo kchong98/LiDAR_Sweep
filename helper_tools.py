@@ -43,12 +43,12 @@ def load_data(n_scenes = 3, n_train_sweeps = 5, n_test_sweeps = 3):
             
             temp = lidar
             temp['class'] = label
-            temp = temp.sample(2000)
+            temp = temp.sample(160000)
 
             # print(temp['class'].unique())
 
-            X_train.append(temp[['x','y','z']].to_numpy())
-            y_train.append(oneHot.transform(temp['class'].to_numpy().reshape(-1,1)))
+            X_train.append(temp[['x','y','z']].to_numpy().reshape(1,-1,3))
+            y_train.append(oneHot.transform(temp['class'].to_numpy().reshape(-1,1)).reshape(1,-1,43))
 
         for a in test_sweeps:
             if a < 10:
@@ -65,10 +65,18 @@ def load_data(n_scenes = 3, n_train_sweeps = 5, n_test_sweeps = 3):
 
             temp = lidar
             temp['class'] = label
-            temp = temp.sample(2000)
+            temp = temp.sample(160000)
 
-            X_test.append(temp[['x','y','z']].to_numpy())
-            y_test.append(oneHot.transform(temp['class'].to_numpy().reshape(-1,1)))                
+            X_test.append(temp[['x','y','z']].to_numpy().reshape(1,-1,3))
+            y_test.append(oneHot.transform(temp['class'].to_numpy().reshape(-1,1)).reshape(1,-1,43))                
+    
+    X_train, X_test, y_train, y_test = np.array(X_train), np.array(X_test), np.array(y_train), np.array(y_test)
+
+    if __name__ == '__main__':
+        print("-"*20)
+        print(X_train.shape, X_test.shape)
+        print(y_train.shape, y_test.shape)
+        print("-"*20)
 
     train_data = tf.data.Dataset.from_tensor_slices((X_train, y_train))
     test_data = tf.data.Dataset.from_tensor_slices((X_test, y_test))
@@ -117,22 +125,28 @@ def t_net(inputs, features):
 def NLLLoss(y_test, y_pred):
     """
     Negative log likelihood custom loss function for PointNet
+
     y_test: true values
     y_pred: predicted values
+
+    returns: loss value
     """
     y_pred_mean = tf.reduce_mean(y_pred)
-    y_pred_sd = tf.reduce_std(y_pred)
+    y_pred_sd = tf.math.reduce_std(y_pred)
     square = tf.square(y_pred_mean - y_test)
-    ms = tf.add(tf.divide(square, y_pred_sd), tf.log(y_pred_sd))
+    ms = tf.add(tf.divide(square, y_pred_sd), tf.math.log(y_pred_sd))
     ms = tf.reduce_mean(ms)
     return (ms)
 
 def create_model(num_points):
     """
     Declaring model
+
     num_points: number of inputs points for input
+
+    returns: tensorflow model
     """
-    inputs = tf.keras.layers.Input(shape=(num_points, 3))
+    inputs = tf.keras.layers.Input(shape=(160000,3))
     x = t_net(inputs, 3)
     x = conv_layer(x, 32)
     x = conv_layer(x, 32)
@@ -156,9 +170,11 @@ def create_model(num_points):
     # outputs = layers.Dense(42, activation = 'softmax')(x)
 
     model = tf.keras.models.Model(inputs = inputs, outputs = outputs)
-    model.compile(optimizer = 'adam', loss = NLLLoss, metrics = [tf.metrics.MeanIoU(num_classes=43)])
+    model.compile(optimizer = 'adam', loss = NLLLoss, metrics = ['accuracy'])
     return model
 
 if __name__ == "__main__":
     train_data, test_data = load_data()
+    model = create_model(160000)
+    model.summary()
     print('Done')
