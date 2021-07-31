@@ -4,6 +4,7 @@ import tensorflow as tf
 import pptk
 import argparse
 import helper_tools
+from sklearn.metrics import jaccard_score
 
 if __name__ == "__main__":
     # Declaring argument parser for command line inputs
@@ -21,10 +22,10 @@ if __name__ == "__main__":
     train_data, test_data = helper_tools.load_data()
 
     if mode == 'train':
-        model = helper_tools.create_model(160000)
-        callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=1e-4, patience=2, restore_best_weights=True)
-        model.fit(train_data, epochs=50, verbose=2, validation_data=test_data, callbacks=[callback])
-        model.save('/saved_models/point_net.h5')
+        model = helper_tools.create_model(10000)
+        # callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=2, restore_best_weights=True)
+        model.fit(train_data, epochs=50, verbose=2, batch_size=1, validation_data=test_data) #, callbacks=[callback]
+        model.save('./saved_models/point_net.h5')
 
     elif mode == 'test':
         print('Done')

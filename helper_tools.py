@@ -43,7 +43,7 @@ def load_data(n_scenes = 3, n_train_sweeps = 5, n_test_sweeps = 3):
             
             temp = lidar
             temp['class'] = label
-            temp = temp.sample(160000)
+            temp = temp.sample(10000)
 
             # print(temp['class'].unique())
 
@@ -65,7 +65,7 @@ def load_data(n_scenes = 3, n_train_sweeps = 5, n_test_sweeps = 3):
 
             temp = lidar
             temp['class'] = label
-            temp = temp.sample(160000)
+            temp = temp.sample(10000)
 
             X_test.append(temp[['x','y','z']].to_numpy().reshape(1,-1,3))
             y_test.append(oneHot.transform(temp['class'].to_numpy().reshape(-1,1)).reshape(1,-1,43))                
@@ -146,7 +146,7 @@ def create_model(num_points):
 
     returns: tensorflow model
     """
-    inputs = tf.keras.layers.Input(shape=(160000,3))
+    inputs = tf.keras.layers.Input(shape=(10000,3))
     x = t_net(inputs, 3)
     x = conv_layer(x, 32)
     x = conv_layer(x, 32)
@@ -162,12 +162,7 @@ def create_model(num_points):
 
     x = conv_layer(x, 128)
     outputs = tf.keras.layers.Conv1D(1, kernel_size = 1, padding = 'valid')(x)
-
-    # x = dense_layer(x, 256)
-    # x = layers.Dropout(0.25)(x)
-    # x = dense_layer(x, 128)
-    # x = layers.Dropout(0.25)(x)
-    # outputs = layers.Dense(42, activation = 'softmax')(x)
+    outputs = tf.reshape(outputs, [-1,1])
 
     model = tf.keras.models.Model(inputs = inputs, outputs = outputs)
     model.compile(optimizer = 'adam', loss = NLLLoss, metrics = ['accuracy'])
@@ -175,6 +170,6 @@ def create_model(num_points):
 
 if __name__ == "__main__":
     train_data, test_data = load_data()
-    model = create_model(160000)
+    model = create_model(10000)
     model.summary()
     print('Done')
