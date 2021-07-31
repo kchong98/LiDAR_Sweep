@@ -5,7 +5,7 @@ import pickle
 from sklearn.preprocessing import OneHotEncoder
 import random
 
-def load_data(n_scenes = 3, n_train_sweeps = 5, n_test_sweeps = 3):
+def load_data(n_scenes = 3, n_train_sweeps = 5, n_test_sweeps = 3, n_samples = 160000):
     """
     Function to load data from PandaSet
 
@@ -43,7 +43,7 @@ def load_data(n_scenes = 3, n_train_sweeps = 5, n_test_sweeps = 3):
             
             temp = lidar
             temp['class'] = label
-            temp = temp.sample(10000)
+            temp = temp.sample(n_samples)
 
             # print(temp['class'].unique())
 
@@ -65,7 +65,7 @@ def load_data(n_scenes = 3, n_train_sweeps = 5, n_test_sweeps = 3):
 
             temp = lidar
             temp['class'] = label
-            temp = temp.sample(10000)
+            temp = temp.sample(n_samples)
 
             X_test.append(temp[['x','y','z']].to_numpy().reshape(1,-1,3))
             y_test.append(oneHot.transform(temp['class'].to_numpy().reshape(-1,1)).reshape(1,-1,43))                
@@ -154,33 +154,41 @@ def create_model(num_points):
 
     returns: tensorflow model
     """
-    inputs = tf.keras.layers.Input(shape=(10000,3))
+    inputs = tf.keras.layers.Input(shape=(num_points,3))
     x = t_net(inputs, 3)
     x = conv_layer(x, 32)
     x = conv_layer(x, 32)
-    t = t_net(x, 32)
-    x = conv_layer(t, 32)
-    x = conv_layer(x, 64)
-    x = conv_layer(x, 512)
+    x = t_net(x, 32)
+    x = conv_layer(x, 32)
+    t = conv_layer(x, 64)
+    x = conv_layer(t, 512)
     # concat = tf.keras.layers.Concatenate()([t, x])
     x = tf.keras.layers.GlobalMaxPooling1D()(x)
-    x = tf.tile(x, [512,1], tf.int32)
-    concat = tf.keras.layers.Concatenate()([t, x])
+    x = tf.tile(tf.reshape(x, [1, 1,512]), [1, num_points,1], tf.int32)
+    # print('-'*10)
+    # print(x.shape)
+    # print('-'*10)
+    concat = tf.keras.layers.Concatenate(axis = 2)([t, x])
+    # print('-'*10)
+    # print(concat.shape)
+    # print('-'*10)    
     x = conv_layer(concat, 512)
     x = conv_layer(x, 256)
     x = conv_layer(x, 128)
 
     x = conv_layer(x, 128)
     x = tf.keras.layers.Dropout(0.25)(x)
-    outputs = tf.keras.layers.Conv1D(1, kernel_size = 1, padding = 'valid')(x)
-    outputs = tf.reshape(outputs, [-1,1])
+    x = tf.keras.layers.Conv1D(1, kernel_size = 1, padding = 'valid')(x)
+    x = dense_layer(x, 256)
+    x = tf.keras.layers.Dropout(0.25)(x)
+    x = dense_layer(x, 128)
+    x = tf.keras.layers.Dropout(0.25)(x)
+    outputs = tf.keras.layers.Dense(43, activation='softmax')(x)
+    
+    # outputs = tf.reshape(outputs, [-1,1])
 
     model = tf.keras.models.Model(inputs = inputs, outputs = outputs)
-<<<<<<< HEAD
-    model.compile(optimizer = 'adam', loss = dice_loss, metrics = [tf.metrics.MeanIoU(num_classes=43)])
-=======
-    model.compile(optimizer = 'adam', loss = NLLLoss, metrics = ['accuracy'])
->>>>>>> ac48b4a14242ad530a0430861e632ce2284b2f01
+    model.compile(optimizer = 'adam', loss = dice_loss, metrics = ['accuracy']) #tf.metrics.MeanIoU(num_classes=43)
     return model
 
 if __name__ == "__main__":
