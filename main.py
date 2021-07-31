@@ -18,16 +18,27 @@ if __name__ == "__main__":
 
     mode = FLAGS.mode
 
+    n_samples = 10000
     # Loading dataset
-    train_data, test_data = helper_tools.load_data()
+    train_data, test_data = helper_tools.load_data(n_samples=n_samples)
 
     if mode == 'train':
-        model = helper_tools.create_model(10000)
-        # callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=2, restore_best_weights=True)
-        model.fit(train_data, epochs=50, verbose=2, batch_size=1, validation_data=test_data) #, callbacks=[callback]
-        model.save('./saved_models/point_net.h5')
+        model = helper_tools.create_model(n_samples)
+        callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=2, restore_best_weights=True)
+        model.fit(train_data, epochs=50, verbose=2, batch_size=1, validation_data=test_data, callbacks=[callback]) #, callbacks=[callback]
+        # model.save('./saved_models/point_net.h5')
+        model.save_weights('./saved_models/checkpoints')
+
+        predict = model.predict(test_data)
+        print(predict.shape)
+        print(predict)
 
     elif mode == 'test':
+        model = helper_tools.create_model(n_samples)
+        model.load_weights('./saved_models/checkpoints')
+        model.summary()
+        predict = model.predict(test_data)
+        print(predict.shape)
         print('Done')
 
     elif mode =='vis':
