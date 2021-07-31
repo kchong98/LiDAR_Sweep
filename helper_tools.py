@@ -127,6 +127,14 @@ def NLLLoss(y_test, y_pred):
     ms = tf.reduce_mean(ms)
     return (ms)
 
+def dice_loss(y_test, y_pred):
+    y_test = tf.cast(y_test, tf.float32)
+    y_pred = tf.math.sigmoid(y_pred)
+    numerator = 2 * tf.reduce_sum(y_test * y_pred)
+    denominator = tf.reduce_sum(y_test + y_pred)
+    loss = 1 - (numerator/denominator)
+    return loss
+
 def create_model(num_points):
     """
     Declaring model
@@ -140,13 +148,16 @@ def create_model(num_points):
     x = conv_layer(t, 32)
     x = conv_layer(x, 64)
     x = conv_layer(x, 512)
-    concat = tf.keras.layers.Concatenate()([t, x])
+    # concat = tf.keras.layers.Concatenate()([t, x])
     x = tf.keras.layers.GlobalMaxPooling1D()(x)
+    x = tf.tile(x, [512,1], tf.int32)
+    concat = tf.keras.layers.Concatenate()([t, x])
     x = conv_layer(concat, 512)
     x = conv_layer(x, 256)
     x = conv_layer(x, 128)
 
     x = conv_layer(x, 128)
+    x = tf.keras.layers.Dropout(0.25)(x)
     outputs = tf.keras.layers.Conv1D(1, kernel_size = 1, padding = 'valid')(x)
 
     # x = dense_layer(x, 256)
@@ -156,7 +167,7 @@ def create_model(num_points):
     # outputs = layers.Dense(42, activation = 'softmax')(x)
 
     model = tf.keras.models.Model(inputs = inputs, outputs = outputs)
-    model.compile(optimizer = 'adam', loss = NLLLoss, metrics = [tf.metrics.MeanIoU(num_classes=43)])
+    model.compile(optimizer = 'adam', loss = dice_loss, metrics = [tf.metrics.MeanIoU(num_classes=43)])
     return model
 
 if __name__ == "__main__":
