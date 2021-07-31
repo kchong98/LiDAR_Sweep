@@ -5,6 +5,31 @@ import pickle
 from sklearn.preprocessing import OneHotEncoder
 import random
 
+def fps(data, n_samples):
+    """
+    Farthest point sampling of point cloud data
+
+    data: input point cloud
+    n_samples: number of samples to return
+
+    returns: farthest point sampled data
+    """
+
+    columns = ['x','y','z','class']
+    if (str(type(data)) == '<class \'pandas.core.frame.DataFrame\'>'):
+        data = data.to_numpy()
+
+    samples = np.empty((n_samples, 4))
+    for i in range(n_samples):
+        distances = []
+        center_point_idx = np.random.randint(0,data.shape[0], size = 1)
+        for a in data:
+            distances.append(np.linalg.norm(data[center_point_idx,:3]-a[:3]))
+        samples[i,:] = data[distances.index(max(distances)), :]
+
+    samples = pd.DataFrame(samples, columns=columns)
+    return samples
+
 def load_data(n_scenes = 3, n_train_sweeps = 5, n_test_sweeps = 3):
     """
     Function to load data from PandaSet
@@ -43,7 +68,9 @@ def load_data(n_scenes = 3, n_train_sweeps = 5, n_test_sweeps = 3):
             
             temp = lidar
             temp['class'] = label
-            temp = temp.sample(10000)
+            temp = fps(temp, 60000)
+            # temp = temp.sample(10000)
+
 
             # print(temp['class'].unique())
 
@@ -65,7 +92,8 @@ def load_data(n_scenes = 3, n_train_sweeps = 5, n_test_sweeps = 3):
 
             temp = lidar
             temp['class'] = label
-            temp = temp.sample(10000)
+            temp = fps(temp, 60000)
+            # temp = temp.sample(10000)
 
             X_test.append(temp[['x','y','z']].to_numpy().reshape(1,-1,3))
             y_test.append(oneHot.transform(temp['class'].to_numpy().reshape(-1,1)).reshape(1,-1,43))                
@@ -176,11 +204,7 @@ def create_model(num_points):
     outputs = tf.reshape(outputs, [-1,1])
 
     model = tf.keras.models.Model(inputs = inputs, outputs = outputs)
-<<<<<<< HEAD
     model.compile(optimizer = 'adam', loss = dice_loss, metrics = [tf.metrics.MeanIoU(num_classes=43)])
-=======
-    model.compile(optimizer = 'adam', loss = NLLLoss, metrics = ['accuracy'])
->>>>>>> ac48b4a14242ad530a0430861e632ce2284b2f01
     return model
 
 if __name__ == "__main__":
