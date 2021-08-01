@@ -14,8 +14,8 @@ def fps(data, n_samples):
 
     returns: farthest point sampled data
     """
-
     columns = ['x','y','z','class']
+    data = data[columns]
     if (str(type(data)) == '<class \'pandas.core.frame.DataFrame\'>'):
         data = data.to_numpy()
 
@@ -26,11 +26,13 @@ def fps(data, n_samples):
         for a in data:
             distances.append(np.linalg.norm(data[center_point_idx,:3]-a[:3]))
         samples[i,:] = data[distances.index(max(distances)), :]
+        if i % 100 == 0:
+            print('Almost!')
 
     samples = pd.DataFrame(samples, columns=columns)
     return samples
 
-def load_data(n_scenes = 3, n_train_sweeps = 5, n_test_sweeps = 3, n_samples = 160000):
+def load_data(n_scenes = 3, n_train_sweeps = 5, n_test_sweeps = 3, n_samples = 16000):
     """
     Function to load data from PandaSet
 
@@ -68,9 +70,8 @@ def load_data(n_scenes = 3, n_train_sweeps = 5, n_test_sweeps = 3, n_samples = 1
             
             temp = lidar
             temp['class'] = label
-            temp = fps(temp, n_samples)
-            # temp = temp.sample(n_samples)
-
+            # temp = fps(temp, n_samples)
+            temp = temp.sample(n_samples)
 
             # print(temp['class'].unique())
 
@@ -92,8 +93,8 @@ def load_data(n_scenes = 3, n_train_sweeps = 5, n_test_sweeps = 3, n_samples = 1
 
             temp = lidar
             temp['class'] = label
-            temp = fps(temp, n_samples)
-            # temp = temp.sample(n_samples)
+            # temp = fps(temp, n_samples)
+            temp = temp.sample(n_samples)
 
             X_test.append(temp[['x','y','z']].to_numpy().reshape(1,-1,3))
             y_test.append(oneHot.transform(temp['class'].to_numpy().reshape(-1,1)).reshape(1,-1,43))                
@@ -222,7 +223,7 @@ def create_model(num_points):
 if __name__ == "__main__":
     n_samples = 80000
 
-    train_data, test_data = load_data()
+    train_data, test_data = load_data(n_samples = n_samples)
     model = create_model(n_samples)
     model.summary()
     print('Done')
