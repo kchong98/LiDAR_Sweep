@@ -66,6 +66,11 @@ if __name__ == "__main__":
         print('Accuracy: {}'.format(accuracy_score(y_true=true, y_pred = predict)))
         print('Done')
 
+    elif mode =='sum':
+        model = helper_tools.create_model(n_samples)
+        model.load_weights('./saved_models/checkpoints')
+        model.summary()
+
     elif mode =='vis':
         # Loading classes from json file
         with open('classes.json') as f:
