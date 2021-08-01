@@ -4,7 +4,7 @@ import tensorflow as tf
 import pptk
 import argparse
 import helper_tools
-from sklearn.metrics import jaccard_score
+from sklearn.metrics import jaccard_score, accuracy_score
 
 if __name__ == "__main__":
     # Declaring argument parser for command line inputs
@@ -18,15 +18,14 @@ if __name__ == "__main__":
 
     mode = FLAGS.mode
 
-    n_samples = 30000
+    n_samples = 10000
 
     if mode == 'train':
         # Loading dataset
         train_data, test_data = helper_tools.load_data(n_samples=n_samples)
         model = helper_tools.create_model(n_samples)
-        callback = tf.keras.callbacks.EarlyStopping(monitor='loss', min_delta=0, patience=2, restore_best_weights=True)
-        model.fit(train_data, epochs=50, verbose=2, batch_size=1, validation_data=test_data, callbacks=[callback]) #, callbacks=[callback]
-        # model.save('./saved_models/point_net.h5')
+        callback = tf.keras.callbacks.EarlyStopping(monitor='loss', min_delta=0, patience=5, restore_best_weights=True)
+        model.fit(train_data, epochs=100, verbose=2, batch_size=1, validation_data=test_data, callbacks=[callback]) #, callbacks=[callback]
         model.save_weights('./saved_models/checkpoints')
 
         predict = model.predict(test_data)
@@ -49,6 +48,7 @@ if __name__ == "__main__":
         print(true[:5])
         print(predict[:5])
         print('Mean IoU: {}'.format(np.average(jaccard_score(y_true = true, y_pred = predict, average=None))))
+        print('Accuracy: {}'.format(accuracy_score(y_true=true, y_pred = predict)))
         print('Done')
 
     elif mode =='vis':
