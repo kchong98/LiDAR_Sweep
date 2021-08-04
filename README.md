@@ -31,10 +31,10 @@ The goal of this project is to determine go/no-go zones for autonomous driving a
 |Mean IoU|0.4907|0.4884|
 
 #### Loss
-![alt text](https://github.com/kchong98/LiDAR_Sweep/tree/main/images/Loss.png "Train and validation loss")
+![Loss plot](https://github.com/kchong98/LiDAR_Sweep/blob/main/images/Loss.png)
 
 #### Accuracy
-![alt text](https://github.com/kchong98/LiDAR_Sweep/tree/main/images/Accuracy.png "Train and validation accuracy")
+![Accuracy plot](https://github.com/kchong98/LiDAR_Sweep/blob/main/images/Accuracy.png)
 
 #### Mean IoU
-![alt text](https://github.com/kchong98/LiDAR_Sweep/tree/main/images/MIoU.png "Train and validation average intersection over union")
+![MIoU plot](https://github.com/kchong98/LiDAR_Sweep/tree/main/images/MIoU.png)
