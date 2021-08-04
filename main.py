@@ -68,7 +68,7 @@ if __name__ == "__main__":
 
     elif mode =='sum':
         model = helper_tools.create_model(n_samples)
-        model.load_weights('./saved_models/checkpoints')
+        model.load_weights('./saved_models/local_machine/checkpoints')
         model.summary()
 
     elif mode =='vis':

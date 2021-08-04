@@ -32,7 +32,7 @@ def fps(data, n_samples):
     samples = pd.DataFrame(samples, columns=columns)
     return samples
 
-def load_data(n_scenes = 3, n_train_sweeps = 5, n_test_sweeps = 3, n_samples = 16000):
+def load_data(n_scenes = 2, n_train_sweeps = 15, n_test_sweeps = 3, n_samples = 16000):
     """
     Function to load data from PandaSet
 
